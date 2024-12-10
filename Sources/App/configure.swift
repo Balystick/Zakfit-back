@@ -19,6 +19,13 @@ public func configure(_ app: Application) async throws {
             database: Environment.get("DATABASE_NAME") ?? "zakfit"
         ), as: .mysql)
     
+    // JWT
+    guard let secret = Environment.get("SECRET_KEY") else {
+        fatalError("JWT secret is not set in environment variables")
+    }
+    let hmacKey = HMACKey(from: Data(secret.utf8))
+    await app.jwt.keys.add(hmac: hmacKey, digestAlgorithm: .sha256)
+    
     // CORS
     let corsConfiguration = CORSMiddleware.Configuration(
         allowedOrigin : .all, // à restreindre par la suite
@@ -40,6 +47,6 @@ public func configure(_ app: Application) async throws {
     ]))
     app.middleware.use(GatekeeperMiddleware())
 
-    // register routes
-    try routes(app)
+    // Controllers
+    try app.register(collection: UserController())
 }
