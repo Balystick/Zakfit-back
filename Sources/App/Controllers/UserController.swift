@@ -26,7 +26,7 @@ struct UserController: RouteCollection {
             .first()
 
         guard existingUser == nil else {
-            throw Abort(.badRequest, reason: "An account with this email already exists.")
+            throw Abort(.badRequest, reason: ErrorMessages.User.emailAlreadyExists)
         }
 
         let passwordHash = try Bcrypt.hash(createUserRequest.password)
@@ -59,11 +59,11 @@ struct UserController: RouteCollection {
         guard let user = try await User.query(on: req.db)
             .filter(\.$email == loginRequest.email)
             .first() else {
-            throw Abort(.unauthorized, reason: "Invalid email or password.")
+            throw Abort(.unauthorized, reason: ErrorMessages.User.invalidCredentials)
         }
 
         guard try Bcrypt.verify(loginRequest.password, created: user.passwordHash) else {
-            throw Abort(.unauthorized, reason: "Invalid email or password.")
+            throw Abort(.unauthorized, reason: ErrorMessages.User.invalidCredentials)
         }
 
         let token = try await req.generateToken(for: user)
