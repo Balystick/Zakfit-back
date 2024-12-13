@@ -11,7 +11,7 @@ import Vapor
 final class UserActivityLevel: Model, Content, @unchecked Sendable {
     static let schema = "user_activity_level"
 
-    @ID(key: .id)
+    @ID(custom: "user_activity_level_id")
     var id: UUID?
 
     @Field(key: "user_activity_level_name")

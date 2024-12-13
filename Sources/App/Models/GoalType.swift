@@ -11,7 +11,7 @@ import Vapor
 final class GoalType: Model, @unchecked Sendable {
     static let schema = "goal_type"
 
-    @ID(key: .id)
+    @ID(custom: "goal_type_id")
     var id: UUID?
 
     @Field(key: "goal_type_name")

@@ -11,7 +11,7 @@ import Vapor
 final class ActivityIntensity: Model, @unchecked Sendable {
     static let schema = "activity_intensity"
 
-    @ID(key: .id)
+    @ID(custom: "activity_intensity_id")
     var id: UUID?
 
     @Field(key: "activity_intensity_name")

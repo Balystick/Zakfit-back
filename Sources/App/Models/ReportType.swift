@@ -11,7 +11,7 @@ import Vapor
 final class ReportType: Model, Content, @unchecked Sendable {
     static let schema = "report_type"
 
-    @ID(key: .id)
+    @ID(custom: "report_type_id")
     var id: UUID?
 
     @Field(key: "report_type_name")

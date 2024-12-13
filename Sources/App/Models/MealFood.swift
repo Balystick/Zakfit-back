@@ -11,22 +11,22 @@ import Vapor
 final class MealFood: Model, Content, @unchecked Sendable {
     static let schema = "meal_food"
 
-    @ID(key: .id)
+    @ID(custom: "meal_food_id")
     var id: UUID?
 
-    @Field(key: "mealfood_quantity")
+    @Field(key: "meal_food_quantity")
     var quantity: Float
 
-    @Field(key: "mealfood_calories")
+    @Field(key: "meal_food_calories")
     var calories: Float
 
-    @Field(key: "mealfood_proteins")
+    @Field(key: "meal_food_proteins")
     var proteins: Float
 
-    @Field(key: "mealfood_carbs")
+    @Field(key: "meal_food_carbs")
     var carbs: Float
 
-    @Field(key: "mealfood_fats")
+    @Field(key: "meal_food_fats")
     var fats: Float
 
     @Parent(key: "meal_id")

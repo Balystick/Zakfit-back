@@ -13,7 +13,6 @@ struct UserDTO: Content {
     var email: String
     var dateOfBirth: Date?
     var height: Float?
-    var weight: Float?
     var genderID: UUID?
     var userActivityLevelID: UUID?
 }

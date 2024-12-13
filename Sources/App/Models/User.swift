@@ -32,14 +32,14 @@ final class User: Model, Content, @unchecked Sendable {
     @Field(key: "user_height")
     var height: Float?
     
-    @Field(key: "user_weight")
-    var weight: Float?
-    
     @OptionalParent(key: "gender_id")
     var gender: Gender?
     
     @OptionalParent(key: "user_activity_level_id")
     var userActivityLevel: UserActivityLevel?
+    
+    @Children(for: \.$user)
+    var weights: [UserWeight]
     
     init() {}
     
@@ -51,7 +51,6 @@ final class User: Model, Content, @unchecked Sendable {
         passwordHash: String,
         dateOfBirth: Date? = nil,
         height: Float? = nil,
-        weight: Float? = nil,
         genderID: UUID? = nil,
         userActivityLevelID: UUID? = nil
     ) {
@@ -62,7 +61,6 @@ final class User: Model, Content, @unchecked Sendable {
         self.passwordHash = passwordHash
         self.dateOfBirth = dateOfBirth
         self.height = height
-        self.weight = weight
         self.$gender.id = genderID
         self.$userActivityLevel.id = userActivityLevelID
     }
@@ -82,7 +80,6 @@ extension User {
             email: self.email,
             dateOfBirth: self.dateOfBirth,
             height: self.height,
-            weight: self.weight,
             genderID: self.$gender.id,
             userActivityLevelID: self.$userActivityLevel.id
         )

@@ -38,7 +38,6 @@ struct UserController: RouteCollection {
             passwordHash: passwordHash,
             dateOfBirth: nil,
             height: nil,
-            weight: nil,
             genderID: nil,
             userActivityLevelID: nil
         )

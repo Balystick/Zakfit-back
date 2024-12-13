@@ -11,7 +11,7 @@ import Vapor
 final class Gender: Model, @unchecked Sendable {
     static let schema = "gender"
 
-    @ID(key: .id)
+    @ID(custom: "gender_id")
     var id: UUID?
 
     @Field(key: "gender_name")
