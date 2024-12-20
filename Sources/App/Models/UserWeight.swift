@@ -5,30 +5,45 @@
 //  Created by Aurélien on 12/12/2024.
 //
 
-import Fluent
 import Vapor
+import Fluent
 
 final class UserWeight: Model, Content, @unchecked Sendable {
     static let schema = "user_weight"
-    
+
     @ID(custom: "user_weight_id")
     var id: UUID?
-    
+
+    @Field(key: "user_weight_date_time")
+    var dateTime: Date
+
+    @Field(key: "user_weight_value")
+    var weightValue: Decimal
+
     @Parent(key: "user_id")
     var user: User
-    
-    @Field(key: "weight_date")
-    var date: Date
-    
-    @Field(key: "weight_value")
-    var value: Float
 
     init() {}
 
-    init(id: UUID? = nil, userID: UUID, date: Date, value: Float) {
+    init(id: UUID? = nil, dateTime: Date, weightValue: Decimal, userID: UUID) {
         self.id = id
+        self.dateTime = dateTime
+        self.weightValue = weightValue
         self.$user.id = userID
-        self.date = date
-        self.value = value
+    }
+}
+
+extension UserWeight {
+    func toDTO() -> UserWeightDTO {
+        let isoFormatter = ISO8601DateFormatter()
+        let dateTimeString = isoFormatter.string(from: self.dateTime)
+
+        let weightValueDouble = NSDecimalNumber(decimal: self.weightValue).doubleValue
+
+        return UserWeightDTO(
+            id: self.id!,
+            dateTime: dateTimeString,
+            weightValue: weightValueDouble
+        )
     }
 }

@@ -11,18 +11,21 @@ import JWT
 
 struct UserController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
-        let usersRoutes = routes.grouped("users")
+        let userRoutes = routes.grouped("user")
         
-        usersRoutes.post("create", use: createUser)
-        usersRoutes.post("login", use: login)
+        userRoutes.post("create", use: create)
+        userRoutes.post("login", use: login)
+        userRoutes.post("update", use: update)
     }
 
     @Sendable
-    func createUser(req: Request) async throws -> UserAuthResponse {
+    func create(req: Request) async throws -> UserAuthResponse {
         let createUserRequest = try req.content.decode(UserAuthRequest.self)
 
         let existingUser = try await User.query(on: req.db)
             .filter(\.$email == createUserRequest.email)
+            .with(\.$activityLevel)
+            .with(\.$sexe)
             .first()
 
         guard existingUser == nil else {
@@ -32,14 +35,8 @@ struct UserController: RouteCollection {
         let passwordHash = try Bcrypt.hash(createUserRequest.password)
         
         let user = User(
-            firstName: nil,
-            lastName: nil,
             email: createUserRequest.email,
-            passwordHash: passwordHash,
-            dateOfBirth: nil,
-            height: nil,
-            genderID: nil,
-            userActivityLevelID: nil
+            passwordHash: passwordHash
         )
         
         try await user.save(on: req.db)
@@ -57,6 +54,8 @@ struct UserController: RouteCollection {
 
         guard let user = try await User.query(on: req.db)
             .filter(\.$email == loginRequest.email)
+            .with(\.$activityLevel)
+            .with(\.$sexe)
             .first() else {
             throw Abort(.unauthorized, reason: ErrorMessages.User.invalidCredentials)
         }
@@ -71,13 +70,33 @@ struct UserController: RouteCollection {
 
         return UserAuthResponse(user: userDTO, token: token)
     }
+    
+    @Sendable
+    func update(req: Request) async throws -> UserDTO {
+        let payload = try req.auth.require(Payload.self)
+        let userId = payload.userId
+
+        guard let existingUser = try await User.find(userId, on: req.db) else {
+            throw Abort(.notFound, reason: "Utilisateur non trouvé")
+        }
+
+        let updateUserRequest = try req.content.decode(UserDTO.self)
+
+        let updatedUser = try await updateUserRequest.toModel(req: req, existingUser: existingUser)
+
+        try await updatedUser.update(on: req.db)
+        
+        try await updatedUser.$activityLevel.load(on: req.db)
+        try await updatedUser.$sexe.load(on: req.db)
+
+        return updatedUser.toDTO()
+    }
 }
 
 extension Request {
     func generateToken(for user: User) async throws -> String {
         let payload = Payload(
-//            expiration: .init(value: .distantFuture),
-            expiration: .init(value: Date().addingTimeInterval(30)),
+            expiration: .init(value: .distantFuture),
             userId: try user.requireID()
         )
         return try await self.jwt.sign(payload)

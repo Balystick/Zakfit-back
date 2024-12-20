@@ -19,6 +19,10 @@ public func configure(_ app: Application) async throws {
             database: Environment.get("DATABASE_NAME") ?? "zakfit"
         ), as: .mysql)
     
+    // Migrations
+//    app.migrations.add(CreateGoal())
+//    try app.autoMigrate().wait()
+    
     // JWT
     guard let secret = Environment.get("SECRET_KEY") else {
         fatalError("JWT secret is not set in environment variables")
@@ -37,16 +41,17 @@ public func configure(_ app: Application) async throws {
     
     // Rate Limiter
     app.caches.use(.memory)
-    app.gatekeeper.config = .init(maxRequests: 100, per: .minute)
+    app.gatekeeper.config = .init(maxRequests: 1000, per: .minute)
     
     // Middlewares
     app.middleware.use(corsMiddleware)
     app.middleware.use(JWTAuthMiddleware(publicPaths: [
-        (method: .POST, path: "/users/create"),
-        (method: .POST, path: "/users/login")
+        (method: .POST, path: "/user/create"),
+        (method: .POST, path: "/user/login")
     ]))
     app.middleware.use(GatekeeperMiddleware())
 
     // Controllers
     try app.register(collection: UserController())
+    try app.register(collection: UserWeightController())
 }

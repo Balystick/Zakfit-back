@@ -8,7 +8,7 @@
 import Fluent
 import Vapor
 
-final class UserActivityLevel: Model, Content, @unchecked Sendable {
+final class ActivityLevel: Model, Content, @unchecked Sendable {
     static let schema = "user_activity_level"
 
     @ID(custom: "user_activity_level_id")
@@ -17,14 +17,10 @@ final class UserActivityLevel: Model, Content, @unchecked Sendable {
     @Field(key: "user_activity_level_name")
     var name: String
 
-    @Field(key: "user_activity_level_order")
-    var order: Int
-
     init() {}
 
     init(id: UUID? = nil, name: String, order: Int) {
         self.id = id
         self.name = name
-        self.order = order
     }
 }

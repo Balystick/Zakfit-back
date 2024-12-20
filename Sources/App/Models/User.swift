@@ -30,13 +30,13 @@ final class User: Model, Content, @unchecked Sendable {
     var dateOfBirth: Date?
     
     @Field(key: "user_height")
-    var height: Float?
+    var height: Decimal?
     
-    @OptionalParent(key: "gender_id")
-    var gender: Gender?
+    @OptionalParent(key: "user_sexe_id")
+    var sexe: Sexe?
     
     @OptionalParent(key: "user_activity_level_id")
-    var userActivityLevel: UserActivityLevel?
+    var activityLevel: ActivityLevel?
     
     @Children(for: \.$user)
     var weights: [UserWeight]
@@ -50,9 +50,9 @@ final class User: Model, Content, @unchecked Sendable {
         email: String,
         passwordHash: String,
         dateOfBirth: Date? = nil,
-        height: Float? = nil,
-        genderID: UUID? = nil,
-        userActivityLevelID: UUID? = nil
+        height: Decimal? = nil,
+        sexeId: UUID? = nil,
+        activityLevelId: UUID? = nil
     ) {
         self.id = id
         self.firstName = firstName
@@ -61,8 +61,8 @@ final class User: Model, Content, @unchecked Sendable {
         self.passwordHash = passwordHash
         self.dateOfBirth = dateOfBirth
         self.height = height
-        self.$gender.id = genderID
-        self.$userActivityLevel.id = userActivityLevelID
+        self.$sexe.id = sexeId
+        self.$activityLevel.id = activityLevelId
     }
 }
 
@@ -74,14 +74,17 @@ extension User {
     }
     
     func toDTO() -> UserDTO {
+        let isoFormatter = ISO8601DateFormatter()
+        let birthDateString = self.dateOfBirth.map { isoFormatter.string(from: $0) } ?? "Non renseigné"
+        
         return UserDTO(
-            firstName: self.firstName,
-            lastName: self.lastName,
+            firstName: self.firstName ?? "Non renseigné",
+            lastName: self.lastName ?? "Non renseigné",
             email: self.email,
-            dateOfBirth: self.dateOfBirth,
-            height: self.height,
-            genderID: self.$gender.id,
-            userActivityLevelID: self.$userActivityLevel.id
+            dateOfBirth: birthDateString,
+            height: self.height.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0.0,
+            sexe: self.sexe?.name ?? "Non renseigné",
+            activityLevel: self.activityLevel?.name ?? "Non renseigné"
         )
     }
 }

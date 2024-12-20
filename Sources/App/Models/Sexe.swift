@@ -1,5 +1,5 @@
 //
-//  Untitled.swift
+//  Gender.swift
 //  ZakFit_back
 //
 //  Created by Aurélien on 09/12/2024.
@@ -8,17 +8,17 @@
 import Fluent
 import Vapor
 
-final class FoodCategory: Model, @unchecked Sendable {
-    static let schema = "food_category"
+final class Sexe: Model, @unchecked Sendable {
+    static let schema = "user_sexe"
 
-    @ID(custom: "food_category_id")
+    @ID(custom: "user_sexe_id")
     var id: UUID?
 
-    @Field(key: "food_category_name")
+    @Field(key: "user_sexe_name")
     var name: String
 
-    @Children(for: \.$category)
-    var foods: [Food]
+    @Children(for: \.$sexe)
+    var users: [User]
 
     init() {}
 
