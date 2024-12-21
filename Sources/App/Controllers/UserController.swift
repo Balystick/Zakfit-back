@@ -16,6 +16,7 @@ struct UserController: RouteCollection {
         userRoutes.post("create", use: create)
         userRoutes.post("login", use: login)
         userRoutes.post("update", use: update)
+        userRoutes.post("update-password", use: updatePassword)
     }
 
     @Sendable
@@ -90,6 +91,36 @@ struct UserController: RouteCollection {
         try await updatedUser.$sexe.load(on: req.db)
 
         return updatedUser.toDTO()
+    }
+    
+    @Sendable
+    func updatePassword(req: Request) async throws -> EmptyBody {
+        let updatePasswordDTO = try req.content.decode(UpdatePasswordDTO.self)
+        
+        let payload = try req.auth.require(Payload.self)
+
+        let userId = payload.userId
+
+        guard let user = try await User.find(userId, on: req.db) else {
+            throw Abort(.notFound, reason: ErrorMessages.User.notFound)
+        }
+
+        guard try Bcrypt.verify(updatePasswordDTO.oldPassword, created: user.passwordHash) else {
+            throw Abort(.unauthorized, reason: ErrorMessages.User.invalidOldPassword)
+        }
+
+        guard updatePasswordDTO.newPassword == updatePasswordDTO.confirmPassword else {
+            throw Abort(.badRequest, reason: ErrorMessages.User.passwordsDoNotMatch)
+        }
+
+        guard updatePasswordDTO.newPassword.count >= 4 else {
+            throw Abort(.badRequest, reason: ErrorMessages.User.passwordTooShort)
+        }
+
+        user.passwordHash = try Bcrypt.hash(updatePasswordDTO.newPassword)
+        try await user.save(on: req.db)
+        
+        return EmptyBody()
     }
 }
 
