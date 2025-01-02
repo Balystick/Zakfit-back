@@ -19,10 +19,6 @@ public func configure(_ app: Application) async throws {
             database: Environment.get("DATABASE_NAME") ?? "zakfit"
         ), as: .mysql)
     
-    // Migrations
-//    app.migrations.add(CreateGoal())
-//    try app.autoMigrate().wait()
-    
     // JWT
     guard let secret = Environment.get("SECRET_KEY") else {
         fatalError("JWT secret is not set in environment variables")
@@ -53,5 +49,6 @@ public func configure(_ app: Application) async throws {
 
     // Controllers
     try app.register(collection: UserController())
-    try app.register(collection: UserWeightController())
+    try app.register(collection: UserWeightsController())
+    try app.register(collection: MealsController())
 }

@@ -1,24 +1,22 @@
 //
-//  UserWeightController.swift
+//  MealController.swift
 //  ZakFit_back
 //
-//  Created by Aurélien on 16/12/2024.
+//  Created by Aurélien on 30/12/2024.
 //
 
 import Vapor
 import Fluent
 
-struct UserWeightController: RouteCollection {
+struct MealsController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
-        let userWeights = routes.grouped("user-weights")
-        userWeights.get(use: getAll)
-        userWeights.get("last", use: getLast)
-        userWeights.get("period", use: getByPeriod)
-        userWeights.post(use: create)
-        userWeights.group(":userWeightID") { weight in
-            weight.get(use: getByID)
-            weight.put(use: update)
-            weight.delete(use: delete)
+        let mealsRoutes = routes.grouped("meals")
+        mealsRoutes.get(use: getAll)
+        mealsRoutes.get("period", use: getByPeriod)
+        mealsRoutes.post(use: create)
+        mealsRoutes.group(":mealID") { meal in
+            meal.put(use: update)
+            meal.delete(use: delete)
         }
     }
     
@@ -31,20 +29,6 @@ struct UserWeightController: RouteCollection {
             .all()
             .map { weights in
                 weights.map { $0.toDTO() }
-            }
-    }
-    
-    @Sendable
-    func getLast(req: Request) throws -> EventLoopFuture<UserWeightDTO> {
-        let payload = try req.auth.require(Payload.self)
-        
-        return UserWeight.query(on: req.db)
-            .filter(\.$user.$id == payload.userId)
-            .sort(\.$dateTime, .descending)
-            .first()
-            .unwrap(or: Abort(.notFound, reason: "Aucun poids trouvé pour cet utilisateur"))
-            .map { userWeight in
-                return userWeight.toDTO()
             }
     }
     
@@ -76,9 +60,9 @@ struct UserWeightController: RouteCollection {
         let userID = try req.auth.require(Payload.self).userId
         let newWeightDTO = try req.content.decode(UserWeightRequestDTO.self)
         let weightValue = Decimal(newWeightDTO.weightValue)
-        guard newWeightDTO.weightValue > 0 else {
-            throw Abort(.badRequest, reason: "Le poids doit être supérieur à zéro.")
-        }
+//        guard newWeightDTO.weightValue > 0 else {
+//            throw Abort(.badRequest, reason: "Le poids doit être supérieur à zéro.")
+//        }
         let isoFormatter = ISO8601DateFormatter()
         guard let dateTime = isoFormatter.date(from: newWeightDTO.dateTime) else {
             throw Abort(.badRequest, reason: "La date fournie n'est pas valide.")
@@ -91,17 +75,6 @@ struct UserWeightController: RouteCollection {
         )
         
         return userWeight.create(on: req.db).map { userWeight.toDTO() }
-    }
-    
-    @Sendable
-    func getByID(req: Request) throws -> EventLoopFuture<UserWeightDTO> {
-        guard let weightID = req.parameters.get("userWeightID", as: UUID.self) else {
-            throw Abort(.badRequest, reason: "ID invalide.")
-        }
-        
-        return UserWeight.find(weightID, on: req.db)
-            .unwrap(or: Abort(.notFound, reason: "Poids non trouvé."))
-            .map { $0.toDTO() }
     }
     
     @Sendable

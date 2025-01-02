@@ -7,16 +7,16 @@
 
 struct ErrorMessages {
     struct User {
-        static let emailAlreadyExists = "An account with this email already exists."
-        static let invalidCredentials = "Invalid email or password."
-        static let notFound = "User not found."
-        static let invalidOldPassword = "Old password is incorrect."
-        static let passwordsDoNotMatch = "Passwords do not match."
-        static let passwordTooShort = "Password must be at least 4 characters long."
+        static let emailAlreadyExists = "Un compte avec cet email existe déjà."
+        static let invalidCredentials = "Email ou mot de passe invalide."
+        static let notFound = "Aucun compte utilisateur avec cet email."
+        static let invalidOldPassword = "L'ancien mot de passe est incorrect."
+        static let passwordsDoNotMatch = "Les mots de passe ne correspondent pas."
+        static let passwordTooShort = "Le mot de passe doit faire au moins 4 caractères."
         
     }
     
     struct Auth {
-        static let authenticationRequired = "Authentication required."
+        static let authenticationRequired = "Authentification requise."
     }
 }
