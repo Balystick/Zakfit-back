@@ -8,16 +8,16 @@ import Gatekeeper
 // configures your application
 public func configure(_ app: Application) async throws {
     // uncomment to serve files from /Public folder
-     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-
+    app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    
     // Database
     app.databases.use(DatabaseConfigurationFactory.mysql(
-            hostname: Environment.get("DATABASE_HOST") ?? "localhost",
-            port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? MySQLConfiguration.ianaPortNumber,
-            username: Environment.get("DATABASE_USERNAME") ?? "root", // à sécuriser par la suite
-            password: Environment.get("DATABASE_PASSWORD") ?? "", // à sécuriser par la suite
-            database: Environment.get("DATABASE_NAME") ?? "zakfit"
-        ), as: .mysql)
+        hostname: Environment.get("DATABASE_HOST") ?? "localhost",
+        port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? MySQLConfiguration.ianaPortNumber,
+        username: Environment.get("DATABASE_USERNAME") ?? "root", // à sécuriser par la suite
+        password: Environment.get("DATABASE_PASSWORD") ?? "", // à sécuriser par la suite
+        database: Environment.get("DATABASE_NAME") ?? "zakfit"
+    ), as: .mysql)
     
     // JWT
     guard let secret = Environment.get("SECRET_KEY") else {
@@ -46,9 +46,10 @@ public func configure(_ app: Application) async throws {
         (method: .POST, path: "/user/login")
     ]))
     app.middleware.use(GatekeeperMiddleware())
-
+    
     // Controllers
     try app.register(collection: UserController())
     try app.register(collection: UserWeightsController())
     try app.register(collection: MealsController())
+    try app.register(collection: GoalsController())
 }
