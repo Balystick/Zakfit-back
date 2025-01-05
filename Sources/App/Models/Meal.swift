@@ -50,21 +50,3 @@ final class Meal: Model, Content, @unchecked Sendable {
         self.$mealType.id = mealTypeID
     }
 }
-
-extension Meal {
-    func toDTO(using req: Request) async throws -> MealDTO {
-        let isoFormatter = ISO8601DateFormatter()
-        let dateTimeString = isoFormatter.string(from: self.dateTime)
-        let mealType = try await $mealType.get(on: req.db)
-
-        return MealDTO(
-            id: self.id!,
-            dateTime: dateTimeString,
-            totalCalories: NSDecimalNumber(decimal: self.totalCalories).doubleValue,
-            totalFats: NSDecimalNumber(decimal: self.totalFats).doubleValue,
-            totalProteins: NSDecimalNumber(decimal: self.totalProteins).doubleValue,
-            totalCarbs: NSDecimalNumber(decimal: self.totalCarbs).doubleValue,
-            mealTypeName: mealType.name
-        )
-    }
-}

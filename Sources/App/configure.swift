@@ -50,7 +50,6 @@ public func configure(_ app: Application) async throws {
     // Controllers
     try app.register(collection: UserController())
     try app.register(collection: UserWeightsController())
-    try app.register(collection: MealsController())
     try app.register(collection: GoalsController())
     try app.register(collection: ActivityController())
 }
