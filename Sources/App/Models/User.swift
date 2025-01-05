@@ -75,16 +75,16 @@ extension User {
     
     func toDTO() -> UserDTO {
         let isoFormatter = ISO8601DateFormatter()
-        let birthDateString = self.dateOfBirth.map { isoFormatter.string(from: $0) } ?? "Non renseigné"
+        let birthDateString = self.dateOfBirth.map { isoFormatter.string(from: $0) } ?? ""
         
         return UserDTO(
-            firstName: self.firstName ?? "Non renseigné",
-            lastName: self.lastName ?? "Non renseigné",
+            firstName: self.firstName ?? "",
+            lastName: self.lastName ?? "",
             email: self.email,
             dateOfBirth: birthDateString,
             height: self.height.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0.0,
-            sexe: self.sexe?.name ?? "Non renseigné",
-            activityLevel: self.activityLevel?.name ?? "Non renseigné"
+            sexe: self.sexe?.name ?? "",
+            activityLevel: self.activityLevel?.name ?? ""
         )
     }
 }

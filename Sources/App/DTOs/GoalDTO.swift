@@ -6,12 +6,13 @@
 //
 
 import Vapor
+import Fluent
 
 struct GoalDTO: Content {
     let id: UUID
     let goalType: GoalTypeDTO
     let goalStatus: String
-    let goalUnit: GoalUnitDTO?
+    let goalUnit: String?
     let relatedActivityType: ActivityTypeDTO?
     let relatedNutrientId: UUID?
     let targetValue: Double
@@ -47,12 +48,15 @@ extension GoalDTO {
         else {
             throw Abort(.badRequest, reason: "Invalid goal status: \(self.goalStatus)")
         }
+        
+        let goalUnitID = try await getGoalUnitId(req: req, unitName: self.goalUnit)
+
 
         let goal = Goal(
             userID: userID,
             goalTypeID: self.goalType.id,
             goalStatusID: try goalStatus.requireID(),
-            goalUnitID: self.goalUnit?.id,
+            goalUnitID: goalUnitID,
             relatedActivityTypeID: self.relatedActivityType?.id,
             relatedNutrientID: self.relatedNutrientId,
             targetValue: targetValueDecimal,
@@ -66,5 +70,20 @@ extension GoalDTO {
         )
         
         return goal
+    }
+    
+    private func getGoalUnitId(req: Request, unitName: String?) async throws -> UUID? {
+        guard let unitName = unitName else {
+            return nil
+        }
+
+        guard let goalUnit = try await GoalUnit.query(on: req.db)
+            .filter(\.$name == unitName)
+            .first()
+        else {
+            throw Abort(.badRequest, reason: "Invalid goal unit: \(unitName)")
+        }
+
+        return try goalUnit.requireID()
     }
 }

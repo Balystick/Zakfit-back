@@ -17,8 +17,8 @@ struct UpdateGoalRequestDTO: Content {
     let minValue: Double?
     let maxValue: Double?
     let frequency: Int?
-    let startDate: Date?
-    let endDate: Date?
+    let startDate: String?
+    let endDate: String?
     let priority: Int?
     let description: String?
 }
@@ -28,8 +28,23 @@ extension UpdateGoalRequestDTO {
         let payload = try req.auth.require(Payload.self)
         let userID = payload.userId
 
-        if let startDate = self.startDate, let endDate = self.endDate, startDate > endDate {
-            throw Abort(.badRequest, reason: "La date de début doit être inférieure à la date de fin.")
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        if let startDateString = self.startDate,
+           let endDateString = self.endDate,
+           let startDate = isoFormatter.date(from: startDateString),
+           let endDate = isoFormatter.date(from: endDateString),
+           startDate > endDate {
+            throw Abort(.badRequest, reason: "La date de début doit précéder celle de fin.")
+        }
+
+        if let startDateString = self.startDate, let startDate = isoFormatter.date(from: startDateString) {
+            existingGoal.startDate = startDate
+        }
+
+        if let endDateString = self.endDate, let endDate = isoFormatter.date(from: endDateString) {
+            existingGoal.endDate = endDate
         }
 
         if let goalTypeId = self.goalTypeId {
@@ -66,14 +81,6 @@ extension UpdateGoalRequestDTO {
 
         if let frequency = self.frequency {
             existingGoal.frequency = frequency
-        }
-
-        if let startDate = self.startDate {
-            existingGoal.startDate = startDate
-        }
-
-        if let endDate = self.endDate {
-            existingGoal.endDate = endDate
         }
 
         if let priority = self.priority {

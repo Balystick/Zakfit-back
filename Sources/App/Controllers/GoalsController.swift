@@ -14,8 +14,24 @@ struct GoalsController: RouteCollection {
         goals.post(use: create)
         goals.put(":goalID", use: update)
         goals.delete(":goalID", use: delete)
-        goals.get(use: list)
-        goals.get("types", use: listTypes)
+        goals.get(use: getAll)
+        goals.get("types", use: getTypes)
+    }
+    
+    @Sendable
+    func getAll(req: Request) throws -> EventLoopFuture<[GoalDTO]> {
+        let payload = try req.auth.require(Payload.self)
+
+        return Goal.query(on: req.db)
+            .filter(\.$user.$id == payload.userId)
+            .with(\.$goalType) { $0.with(\.$category) }
+            .with(\.$goalStatus)
+            .with(\.$goalUnit)
+            .with(\.$relatedActivityType)
+            .all()
+            .map { goals in
+                goals.map { $0.toDTO() }
+            }
     }
 
     @Sendable
@@ -27,13 +43,14 @@ struct GoalsController: RouteCollection {
         try await goal.save(on: req.db)
         
         try await goal.$goalType.load(on: req.db)
+        try await goal.$goalType.value?.$category.load(on: req.db)
         try await goal.$goalStatus.load(on: req.db)
         
-        if let goalUnitId = goal.$goalUnit.id {
+        if goal.$goalUnit.id != nil {
             try await goal.$goalUnit.load(on: req.db)
         }
         
-        if let relatedActivityTypeId = goal.$relatedActivityType.id {
+        if goal.$relatedActivityType.id != nil {
             try await goal.$relatedActivityType.load(on: req.db)
         }
         
@@ -42,7 +59,7 @@ struct GoalsController: RouteCollection {
 
     @Sendable
     func update(req: Request) async throws -> GoalDTO {
-        guard let goalId = req.parameters.get("goalId", as: UUID.self) else {
+        guard let goalId = req.parameters.get("goalID", as: UUID.self) else {
             throw Abort(.badRequest, reason: "Goal ID is required.")
         }
         
@@ -61,12 +78,15 @@ struct GoalsController: RouteCollection {
         
         try await updatedGoal.update(on: req.db)
         
+        
         try await updatedGoal.$goalType.load(on: req.db)
+        try await updatedGoal.$goalType.value?.$category.load(on: req.db)
         try await updatedGoal.$goalStatus.load(on: req.db)
-        if let goalUnitId = updatedGoal.$goalUnit.id {
+        if updatedGoal.$goalUnit.id != nil {
             try await updatedGoal.$goalUnit.load(on: req.db)
         }
-        if let relatedActivityTypeId = updatedGoal.$relatedActivityType.id {
+
+        if updatedGoal.$relatedActivityType.id != nil {
             try await updatedGoal.$relatedActivityType.load(on: req.db)
         }
         
@@ -83,20 +103,10 @@ struct GoalsController: RouteCollection {
     }
 
     @Sendable
-    func list(req: Request) async throws -> [GoalDTO] {
-        let goals = try await Goal.query(on: req.db)
-            .with(\.$goalType)
-            .with(\.$goalStatus)
-            .with(\.$goalUnit)
-            .with(\.$relatedActivityType)
+    func getTypes(req: Request) async throws -> [GoalTypeDTO] {
+        let goalTypes = try await GoalType.query(on: req.db)
+            .with(\.$category)
             .all()
-
-        return goals.map { $0.toDTO() }
-    }
-
-    @Sendable
-    func listTypes(req: Request) async throws -> [GoalTypeDTO] {
-        let goalTypes = try await GoalType.query(on: req.db).all()
         return goalTypes.map { $0.toDTO() }
     }
 }

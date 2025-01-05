@@ -12,4 +12,5 @@ struct GoalTypeDTO: Content {
     let name: String
     let description: String
     let order: Int
+    let categoryName: String
 }

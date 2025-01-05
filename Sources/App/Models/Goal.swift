@@ -106,16 +106,14 @@ extension Goal {
         let maxVal = self.maxValue.map { NSDecimalNumber(decimal: $0).doubleValue }
 
         let typeDTO = self.goalType.toDTO()
-
-        let unitDTO = self.goalUnit?.toDTO()
-
+        let unitName = self.goalUnit?.name
         let activityTypeDTO = self.relatedActivityType?.toDTO()
 
         return GoalDTO(
             id: self.id ?? UUID(),
             goalType: typeDTO,
             goalStatus: self.goalStatus.name,
-            goalUnit: unitDTO,
+            goalUnit: unitName,
             relatedActivityType: activityTypeDTO,
             relatedNutrientId: self.$relatedNutrient.id,
             targetValue: targetVal,
